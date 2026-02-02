@@ -1,0 +1,22 @@
+{
+  "name": "disaster-volunteer-backend",
+  "version": "1.0.0",
+  "description": "Backend for AI-assisted Disaster Volunteer Coordination System",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": ["disaster", "volunteer", "coordination", "ai"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2"
+  }
+}
