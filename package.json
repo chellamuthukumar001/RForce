@@ -1,0 +1,14 @@
+{
+    "name": "disaster-response-monorepo",
+    "private": true,
+    "workspaces": [
+        "frontend",
+        "backend"
+    ],
+    "scripts": {
+        "install-all": "npm install"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
