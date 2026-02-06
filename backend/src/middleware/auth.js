@@ -1,12 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import supabase from '../config/supabase.js';
 
 dotenv.config();
-
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-);
 
 /**
  * Middleware to verify JWT token from Supabase
