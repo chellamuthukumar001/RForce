@@ -1,11 +1,7 @@
 import { useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../services/supabase'; // Use the shared, safe instance
 import toast from 'react-hot-toast';
 
-const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 /**
  * Hook to subscribe to Supabase Realtime changes
