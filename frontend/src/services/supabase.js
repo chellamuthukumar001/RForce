@@ -26,7 +26,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
                     order: () => ({})
                 })
             })
-        })
+        }),
+        channel: () => ({
+            on: () => ({ subscribe: () => { } }),
+            subscribe: () => { }
+        }),
+        removeChannel: () => { }
     };
 } else {
     supabase = createClient(supabaseUrl, supabaseAnonKey);
