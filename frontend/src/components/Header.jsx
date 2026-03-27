@@ -26,146 +26,172 @@ const Header = () => {
     const isActive = (path) => location.pathname === path;
 
     const navLinks = [
-        { path: '/map', label: 'Map View' },
-        { path: '/updates', label: 'Updates' },
+        { path: '/map', label: 'Global Map' },
+        { path: '/updates', label: 'Live Updates' },
     ];
 
-    if (role === 'admin') {
-        navLinks.push({ path: '/admin/dashboard', label: 'Admin Overview' });
-    } else {
-        navLinks.push({ path: '/volunteer/dashboard', label: 'Dashboard' });
+    if (user) {
+        if (role === 'admin') {
+            navLinks.push({ path: '/admin/dashboard', label: 'Command Center' });
+        } else {
+            navLinks.push({ path: '/volunteer/dashboard', label: 'My Operations' });
+        }
     }
 
     return (
         <header
-            className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
-                ? 'bg-white/90 backdrop-blur-md shadow-md border-b border-white/20'
-                : 'bg-white/80 backdrop-blur-sm border-b border-gray-100'
+            className={`fixed top-0 w-full z-[100] transition-all duration-500 ${scrolled
+                ? 'py-3 bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-2xl'
+                : 'py-6 bg-transparent border-b border-transparent'
                 }`}
         >
-            <div className="container mx-auto px-4 py-3">
+            <div className="container mx-auto px-6">
                 <div className="flex items-center justify-between">
-                    <Link to="/" className="flex items-center space-x-2 group">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-800 rounded-xl flex items-center justify-center shadow-lg shadow-primary-200 group-hover:shadow-primary-300 transition-all duration-300">
+                    {/* Logo Section */}
+                    <Link to="/" className="flex items-center space-x-3 group">
+                        <motion.div 
+                            whileHover={{ rotate: 180 }}
+                            transition={{ duration: 0.5 }}
+                            className="w-11 h-11 bg-gradient-to-tr from-emerald-500 to-green-700 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40"
+                        >
                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
+                        </motion.div>
+                        <div className="flex flex-col">
+                            <span className="text-2xl font-bold font-heading tracking-tighter text-white leading-none">
+                                RForce
+                            </span>
+                            <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-bold">
+                                Disaster Response
+                            </span>
                         </div>
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">
-                            RForce
-                        </span>
                     </Link>
 
                     {/* Desktop Nav */}
-                    <nav className="hidden md:flex items-center space-x-1">
+                    <nav className="hidden md:flex items-center bg-white/5 backdrop-blur-md rounded-full px-2 py-1.5 border border-white/10">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.path}
+                                to={link.path}
+                                className={`relative px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${isActive(link.path)
+                                    ? 'text-white'
+                                    : 'text-gray-400 hover:text-white'
+                                    }`}
+                            >
+                                {isActive(link.path) && (
+                                    <motion.div
+                                        layoutId="nav-bg"
+                                        className="absolute inset-0 bg-emerald-500/10 rounded-full border border-emerald-500/20"
+                                        initial={false}
+                                        transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                    />
+                                )}
+                                {link.label}
+                            </Link>
+                        ))}
+                    </nav>
+
+                    {/* User Actions */}
+                    <div className="hidden md:flex items-center space-x-4">
                         {user ? (
                             <>
-                                {navLinks.map((link) => (
-                                    <Link
-                                        key={link.path}
-                                        to={link.path}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive(link.path)
-                                            ? 'bg-primary-50 text-primary-700'
-                                            : 'text-gray-600 hover:text-primary-700 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ))}
-                                <div className="h-6 w-px bg-gray-200 mx-2"></div>
                                 <button
                                     onClick={handleLogout}
-                                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-danger-600 transition-colors"
+                                    className="px-4 py-2 text-sm font-semibold text-gray-400 hover:text-red-400 transition-colors"
                                 >
-                                    Logout
+                                    Log Out
                                 </button>
-                                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold border-2 border-primary-200">
-                                    {user.email[0].toUpperCase()}
-                                </div>
+                                <motion.div 
+                                    whileHover={{ scale: 1.05 }}
+                                    className="flex items-center space-x-3 bg-white/5 pl-4 pr-1.5 py-1.5 rounded-full border border-white/10"
+                                >
+                                    <span className="text-xs font-medium text-gray-300">
+                                        {role === 'admin' ? 'Controller' : 'Responder'}
+                                    </span>
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center text-white font-bold shadow-inner">
+                                        {user.email[0].toUpperCase()}
+                                    </div>
+                                </motion.div>
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="px-5 py-2.5 text-gray-700 font-medium hover:text-primary-700 transition-colors">
-                                    Login
+                                <Link to="/login" className="px-5 py-2.5 text-gray-300 font-semibold hover:text-white transition-colors">
+                                    Sign In
                                 </Link>
                                 <Link
                                     to="/signup"
-                                    className="px-5 py-2.5 bg-primary-600 text-white rounded-full font-medium hover:bg-primary-700 transition-all shadow-md hover:shadow-lg shadow-primary-200"
+                                    className="btn btn-premium text-sm"
                                 >
-                                    Get Started
+                                    Volunteer Now
                                 </Link>
                             </>
                         )}
-                    </nav>
+                    </div>
 
-                    {/* Mobile Menu Button */}
+                    {/* Mobile Menu Icon */}
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="md:hidden p-2 text-gray-600 hover:text-primary-600 transition-colors"
+                        className="md:hidden p-2.5 bg-white/5 rounded-xl border border-white/10 text-white hover:bg-white/10 transition-colors"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {mobileMenuOpen ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            )}
+                            <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} 
+                            />
                         </svg>
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Menu */}
+            {/* Mobile Nav Overlay */}
             <AnimatePresence>
                 {mobileMenuOpen && (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden bg-white border-t border-gray-100"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="md:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-2xl border-b border-white/10 py-8 px-6 space-y-6 shadow-2xl"
                     >
-                        <div className="px-4 py-4 space-y-3">
+                        <div className="space-y-2">
+                            {navLinks.map((link) => (
+                                <Link
+                                    key={link.path}
+                                    to={link.path}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className={`block text-2xl font-bold tracking-tight ${isActive(link.path) ? 'text-emerald-400' : 'text-white'}`}
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </div>
+                        <div className="pt-6 border-t border-white/10 space-y-4">
                             {user ? (
-                                <>
-                                    {navLinks.map((link) => (
-                                        <Link
-                                            key={link.path}
-                                            to={link.path}
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className={`block px-4 py-3 rounded-lg text-base font-medium ${isActive(link.path)
-                                                ? 'bg-primary-50 text-primary-700'
-                                                : 'text-gray-600 hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            {link.label}
-                                        </Link>
-                                    ))}
-                                    <button
-                                        onClick={() => {
-                                            handleLogout();
-                                            setMobileMenuOpen(false);
-                                        }}
-                                        className="block w-full text-left px-4 py-3 text-base font-medium text-danger-600 hover:bg-danger-50 rounded-lg"
-                                    >
-                                        Logout
-                                    </button>
-                                </>
+                                <button
+                                    onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                                    className="w-full btn btn-outline border-red-500/30 text-red-400"
+                                >
+                                    Sign Out
+                                </button>
                             ) : (
-                                <div className="grid gap-3">
-                                    <Link
-                                        to="/login"
+                                <>
+                                    <Link 
+                                        to="/login" 
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="block text-center px-4 py-3 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
+                                        className="block w-full text-center py-4 bg-white/5 rounded-2xl text-white font-bold border border-white/10"
                                     >
-                                        Login
+                                        Log In
                                     </Link>
-                                    <Link
-                                        to="/signup"
+                                    <Link 
+                                        to="/signup" 
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="block text-center px-4 py-3 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700"
+                                        className="block w-full btn btn-premium py-4"
                                     >
                                         Get Started
                                     </Link>
-                                </div>
+                                </>
                             )}
                         </div>
                     </motion.div>

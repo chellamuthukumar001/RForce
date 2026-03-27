@@ -11,19 +11,24 @@ const supabase = createClient(
 async function verify() {
     console.log('🔍 Verifying Data...');
 
-    const { count: volCount } = await supabase.from('volunteers').select('*', { count: 'exact', head: true });
+    const { count: volCount, error: volError } = await supabase.from('volunteers').select('*', { count: 'exact', head: true });
+    if (volError) console.error('Volunteers error:', volError);
     console.log(`Volunteers: ${volCount}`);
 
-    const { count: taskCount } = await supabase.from('tasks').select('*', { count: 'exact', head: true });
+    const { count: taskCount, error: taskError } = await supabase.from('tasks').select('*', { count: 'exact', head: true });
+    if (taskError) console.error('Tasks error:', taskError);
     console.log(`Tasks: ${taskCount}`);
 
-    const { count: assignCount } = await supabase.from('task_assignments').select('*', { count: 'exact', head: true });
+    const { count: assignCount, error: assignError } = await supabase.from('task_assignments').select('*', { count: 'exact', head: true });
+    if (assignError) console.error('Assignments error:', assignError);
     console.log(`Assignments: ${assignCount}`);
 
-    const { count: disasterCount } = await supabase.from('disasters').select('*', { count: 'exact', head: true });
+    const { count: disasterCount, error: disasterError } = await supabase.from('disasters').select('*', { count: 'exact', head: true });
+    if (disasterError) console.error('Disasters error:', disasterError);
     console.log(`Disasters: ${disasterCount}`);
 
-    const { count: updateCount } = await supabase.from('updates').select('*', { count: 'exact', head: true });
+    const { count: updateCount, error: updateError } = await supabase.from('updates').select('*', { count: 'exact', head: true });
+    if (updateError) console.error('Updates error:', updateError);
     console.log(`Updates: ${updateCount}`);
 
     if (volCount > 0 && taskCount > 0 && updateCount > 0) {

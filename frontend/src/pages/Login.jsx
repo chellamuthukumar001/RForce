@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
-import { supabase } from '../services/supabase';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -18,93 +17,90 @@ const Login = () => {
         setError('');
         setLoading(true);
 
-        const { data, error } = await login(email, password);
+        try {
+            const { data, error } = await login(email, password);
+            setLoading(false);
 
-        setLoading(false);
-
-        if (error) {
-            setError(error);
-        } else {
-            // Determine redirection based on role (fetched from backend login response or separate call if needed)
-            // For now, let's assume the seeded admin email is admin@example.com
-            // In a real app, we should decode the JWT or fetch the profile.
-            // Since we know the admin email from seed.js:
-            if (data?.role === 'admin') {
-                navigate('/admin/dashboard');
+            if (error) {
+                setError(error);
             } else {
-                navigate('/volunteer/dashboard');
+                if (data?.role === 'admin') {
+                    navigate('/admin/dashboard');
+                } else {
+                    navigate('/volunteer/dashboard');
+                }
             }
+        } catch (err) {
+            setError('Strategic connection failure. Attempt override.');
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 relative overflow-hidden">
-            {/* Background Decorations */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-primary-100 rounded-full blur-3xl opacity-30"></div>
-                <div className="absolute top-[30%] -right-[10%] w-[40%] h-[40%] bg-success-100 rounded-full blur-3xl opacity-30"></div>
-            </div>
+        <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 relative overflow-hidden">
+            {/* Mesh Gradients */}
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-900/10 rounded-full blur-[120px] animate-pulse-slow"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-900/10 rounded-full blur-[120px] animate-pulse-slow delay-1000"></div>
 
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 className="max-w-md w-full relative z-10"
             >
-                <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/50 p-8 sm:p-10">
-                    <div className="text-center mb-8">
-                        <Link to="/" className="inline-block">
+                <div className="glass-card p-10 lg:p-12">
+                    <div className="text-center mb-10">
+                        <Link to="/" className="inline-block group mb-6">
                             <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                className="w-16 h-16 bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-200"
+                                whileHover={{ rotate: 180 }}
+                                transition={{ duration: 0.5 }}
+                                className="w-20 h-20 bg-gradient-to-tr from-emerald-500 to-green-700 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/20"
                             >
-                                <svg className="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </motion.div>
                         </Link>
-                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome Back</h2>
-                        <p className="text-gray-500 mt-2 text-lg">Sign in to continue your mission</p>
+                        <h2 className="text-4xl font-black text-white tracking-tighter uppercase leading-none mb-4">Tactical<br/>Authentication.</h2>
+                        <p className="text-[10px] font-black tracking-[0.3em] text-emerald-500 uppercase">Input Credentials to Initialize Node</p>
                     </div>
 
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="bg-danger-50 border border-danger-100 text-danger-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-3"
-                        >
-                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {error}
-                        </motion.div>
-                    )}
+                    <AnimatePresence>
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-2xl mb-8 flex items-center gap-3 text-xs font-bold uppercase tracking-wider"
+                            >
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {error}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Email Address
-                            </label>
-                            <input
+                        <div className="space-y-2">
+                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Responder Signature (Email)</label>
+                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="input-field bg-gray-50/50 focus:bg-white"
-                                placeholder="you@example.com"
+                                className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 text-white outline-none focus:border-emerald-500/50 transition-all font-medium"
+                                placeholder="name@division.com"
                                 required
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Password
-                            </label>
-                            <input
+                        <div className="space-y-2">
+                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Secure Passkey</label>
+                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="input-field bg-gray-50/50 focus:bg-white"
-                                placeholder="••••••••"
+                                className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 text-white outline-none focus:border-emerald-500/50 transition-all font-medium"
+                                placeholder="••••••••••••"
                                 required
                             />
                         </div>
@@ -114,29 +110,28 @@ const Login = () => {
                             whileTap={{ scale: 0.98 }}
                             type="submit"
                             disabled={loading}
-                            className="w-full btn-primary py-3.5 text-lg shadow-lg shadow-primary-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full btn btn-premium py-5 text-xs font-black uppercase tracking-widest shadow-2xl shadow-emerald-500/20 disabled:opacity-50"
                         >
                             {loading ? (
-                                <span className="flex items-center justify-center">
-                                    <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                    </svg>
-                                    Verifying...
+                                <span className="flex items-center justify-center gap-3">
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                    Synchronizing...
                                 </span>
                             ) : (
-                                'Sign In'
+                                'Initiate Session'
                             )}
                         </motion.button>
                     </form>
 
-                    <div className="mt-8 text-center">
-                        <p className="text-gray-600">
-                            Don't have an account?{' '}
-                            <Link to="/signup" className="text-primary-600 hover:text-primary-700 font-bold hover:underline decoration-2 underline-offset-2 transition-all">
-                                Join now
+                    <div className="mt-10 text-center flex flex-col items-center gap-4">
+                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+                            New Unit?{' '}
+                            <Link to="/signup" className="text-emerald-500 hover:text-emerald-400 font-extrabold transition-all">
+                                Request Entry Profile
                             </Link>
                         </p>
+                         <div className="h-px w-20 bg-white/5"></div>
+                         <Link to="/" className="text-[9px] font-bold text-gray-700 uppercase tracking-widest hover:text-gray-500">Back to External View</Link>
                     </div>
                 </div>
             </motion.div>
