@@ -48,22 +48,26 @@ const Header = () => {
             <div className="container mx-auto px-6">
                 <div className="flex items-center justify-between">
                     {/* Logo Section */}
-                    <Link to="/" className="flex items-center space-x-3 group">
+                    <Link to="/" className="flex items-center space-x-4 group">
                         <motion.div 
-                            whileHover={{ rotate: 180 }}
-                            transition={{ duration: 0.5 }}
-                            className="w-11 h-11 bg-gradient-to-tr from-emerald-500 to-green-700 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40"
+                            whileHover={{ rotate: 90, scale: 1.1 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                            className="w-12 h-12 bg-gradient-to-tr from-emerald-600 to-green-800 rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-500/20 group-hover:shadow-emerald-500/40 relative overflow-hidden"
                         >
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent)] opacity-50"></div>
+                            <svg className="w-7 h-7 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </motion.div>
                         <div className="flex flex-col">
-                            <span className="text-2xl font-bold font-heading tracking-tighter text-white leading-none">
-                                RForce
-                            </span>
-                            <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-bold">
-                                Disaster Response
+                            <div className="flex items-center gap-2">
+                                <span className="text-3xl font-black font-heading tracking-tighter text-white leading-none">
+                                    RFORCE
+                                </span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                            </div>
+                            <span className="text-[9px] uppercase tracking-[0.4em] text-emerald-500/60 font-black">
+                                COMMAND OPERATIVE
                             </span>
                         </div>
                     </Link>
