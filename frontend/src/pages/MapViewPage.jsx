@@ -52,8 +52,8 @@ const MapViewPage = () => {
     const filtered = getFilteredData();
 
     return (
-        <div className="min-h-screen bg-background flex flex-col pt-20 overflow-hidden">
-            <div className="flex-1 relative">
+        <div className="h-screen bg-background flex flex-col pt-20 overflow-hidden">
+            <div className="relative flex-1">
                 {/* Advanced Command Sidebar */}
                 <motion.div
                     initial={{ x: -20, opacity: 0 }}
@@ -126,7 +126,7 @@ const MapViewPage = () => {
                 </motion.div>
 
                 {/* Map Interface Container */}
-                <div className="h-full w-full relative z-0">
+                <div className="absolute inset-0 z-0">
                     <MapView
                         center={[37.7749, -122.4194]}
                         zoom={6}
@@ -136,7 +136,7 @@ const MapViewPage = () => {
                     
                     {/* Map UI Decorations */}
                     <div className="absolute top-6 right-6 z-[1000] glass-card p-3 flex gap-2">
-                         <div className="px-3 py-1 bg-black/40 rounded-lg text-[9px] font-black tracking-widest border border-white/10">37.7749N / 122.4194W</div>
+                         <div className="px-3 py-1 bg-black/40 rounded-lg text-[9px] font-black tracking-widest border border-white/10">COORD: NOMINAL</div>
                          <div className="px-3 py-1 bg-emerald-500/10 rounded-lg text-[9px] font-black tracking-widest border border-emerald-500/20 text-emerald-400">GPS STABLE</div>
                     </div>
                 </div>
