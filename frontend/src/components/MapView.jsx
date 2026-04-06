@@ -16,7 +16,7 @@ L.Icon.Default.mergeOptions({
 const createPremiumIcon = (color, isDisaster = false) => {
     const size = isDisaster ? 32 : 24;
     const pulseClass = isDisaster ? 'animate-ping' : '';
-    
+
     return L.divIcon({
         className: 'premium-marker',
         html: `
@@ -29,8 +29,8 @@ const createPremiumIcon = (color, isDisaster = false) => {
             </div>
         `,
         iconSize: [size, size],
-        iconAnchor: [size/2, size/2],
-        popupAnchor: [0, -size/2]
+        iconAnchor: [size / 2, size / 2],
+        popupAnchor: [0, -size / 2]
     });
 };
 
@@ -143,19 +143,34 @@ const MapView = ({
                     v.latitude && v.longitude && (
                         <Marker key={`v-${v.id}`} position={[v.latitude, v.longitude]} icon={volunteerIcon}>
                             <Popup className="premium-popup">
-                                <div className="p-1 min-w-[180px]">
-                                    <h3 className="text-lg font-bold text-gray-900 leading-tight">{v.name || 'Active Responder'}</h3>
-                                    <div className="flex gap-2 mt-2">
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-black ${v.availability === 'available' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
-                                            {v.availability}
-                                        </span>
+                                <div className="p-1 min-w-[200px]">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700 font-black text-sm">
+                                            {v.name ? v.name[0].toUpperCase() : 'R'}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-base font-bold text-gray-900 leading-tight">{v.name || 'Field Responder'}</h3>
+                                            <span className={`text-[10px] uppercase font-black ${v.availability === 'available' ? 'text-emerald-600' : 'text-gray-500'}`}>
+                                                ● {v.availability || 'available'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2 italic">Unit Signature Verified</p>
+                                    {v.phone && <p className="text-xs text-gray-600">📞 {v.phone}</p>}
+                                    {v.city && <p className="text-xs text-gray-500">📍 {v.city}{v.state ? `, ${v.state}` : ''}</p>}
+                                    <p className="text-xs text-violet-600 font-bold mt-1">⭐ {v.reliability_score || 100}% Reliability</p>
+                                    {v.skills && v.skills.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-2">
+                                            {v.skills.slice(0, 3).map(s => (
+                                                <span key={s} className="px-1.5 py-0.5 rounded bg-gray-100 text-[9px] font-bold text-gray-600">{s}</span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </Popup>
                         </Marker>
                     )
                 ))}
+
 
                 {disasters.map((d) => (
                     d.latitude && d.longitude && (

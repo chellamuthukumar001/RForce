@@ -1,30 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import MapView from '../components/MapView';
-import { volunteerAPI, disasterAPI } from '../services/api';
-import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../services/supabase';
+import { motion } from 'framer-motion';
 
 const MapViewPage = () => {
     const [volunteers, setVolunteers] = useState([]);
     const [disasters, setDisasters] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all'); // all, disasters, volunteers
+    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
         fetchData();
     }, []);
 
+    // Geocode a city string to lat/lng using free Nominatim API
+    const geocodeCity = async (city, state, country) => {
+        const query = [city, state, country].filter(Boolean).join(', ');
+        if (!query) return null;
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+                { headers: { 'Accept-Language': 'en' } }
+            );
+            const data = await res.json();
+            if (data && data[0]) {
+                return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+            }
+        } catch (e) { /* silent */ }
+        return null;
+    };
+
     const fetchData = async () => {
         try {
-            const [volunteersRes, disastersRes] = await Promise.all([
-                volunteerAPI.getAll().catch(() => ({ data: { volunteers: [] } })),
-                disasterAPI.getAll().catch(() => ({ data: { disasters: [] } }))
+            const [volRes, disRes] = await Promise.all([
+                supabase.from('volunteers').select('*'),
+                supabase.from('disasters').select('*')
             ]);
 
-            setVolunteers(volunteersRes.data.volunteers || []);
-            setDisasters(disastersRes.data.disasters || []);
+            const rawVolunteers = volRes.data || [];
+            const rawDisasters = disRes.data || [];
+
+            // For volunteers missing lat/lng, geocode from their city
+            const enrichedVolunteers = await Promise.all(
+                rawVolunteers.map(async (v) => {
+                    if (v.latitude && v.longitude && (v.latitude !== 0 || v.longitude !== 0)) {
+                        return v;
+                    }
+                    if (v.city || v.state) {
+                        const coords = await geocodeCity(v.city, v.state, v.country);
+                        if (coords) return { ...v, latitude: coords.lat, longitude: coords.lng };
+                    }
+                    return v; // Return as-is if no location info
+                })
+            );
+
+            // For disasters missing lat/lng, geocode from their city
+            const enrichedDisasters = await Promise.all(
+                rawDisasters.map(async (d) => {
+                    if (d.latitude && d.longitude && (d.latitude !== 0 || d.longitude !== 0)) {
+                        return d;
+                    }
+                    if (d.city || d.state) {
+                        const coords = await geocodeCity(d.city, d.state, d.country);
+                        if (coords) return { ...d, latitude: coords.lat, longitude: coords.lng };
+                    }
+                    return d;
+                })
+            );
+
+            setVolunteers(enrichedVolunteers);
+            setDisasters(enrichedDisasters);
             setLoading(false);
         } catch (err) {
-            console.error('Failed to load map data');
+            console.error('Failed to load map data:', err);
             setLoading(false);
         }
     };
@@ -80,7 +128,7 @@ const MapViewPage = () => {
 
                         {/* Interactive Grid Switcher */}
                         <div className="space-y-2">
-                             <span className="text-[10px] uppercase font-bold text-gray-400 tracking-[0.2em]">Filter Layers</span>
+                            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-[0.2em]">Filter Layers</span>
                             <div className="grid gap-2">
                                 {[
                                     { id: 'all', label: 'Primary Overlay', count: volunteers.length + disasters.length, color: 'emerald' },
@@ -90,8 +138,8 @@ const MapViewPage = () => {
                                     <button
                                         key={item.id}
                                         onClick={() => setFilter(item.id)}
-                                        className={`group relative flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border ${filter === item.id 
-                                            ? `bg-${item.color}-500/10 border-${item.color}-500/40 text-${item.color}-300` 
+                                        className={`group relative flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 border ${filter === item.id
+                                            ? `bg-${item.color}-500/10 border-${item.color}-500/40 text-${item.color}-300`
                                             : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'}`}
                                     >
                                         <div className="flex items-center gap-3">
@@ -133,11 +181,11 @@ const MapViewPage = () => {
                         volunteers={filtered.volunteers}
                         disasters={filtered.disasters}
                     />
-                    
+
                     {/* Map UI Decorations */}
                     <div className="absolute top-6 right-6 z-[1000] glass-card p-3 flex gap-2">
-                         <div className="px-3 py-1 bg-black/40 rounded-lg text-[9px] font-black tracking-widest border border-white/10">COORD: NOMINAL</div>
-                         <div className="px-3 py-1 bg-emerald-500/10 rounded-lg text-[9px] font-black tracking-widest border border-emerald-500/20 text-emerald-400">GPS STABLE</div>
+                        <div className="px-3 py-1 bg-black/40 rounded-lg text-[9px] font-black tracking-widest border border-white/10">COORD: NOMINAL</div>
+                        <div className="px-3 py-1 bg-emerald-500/10 rounded-lg text-[9px] font-black tracking-widest border border-emerald-500/20 text-emerald-400">GPS STABLE</div>
                     </div>
                 </div>
             </div>
