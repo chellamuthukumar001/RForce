@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { taskAPI, volunteerAPI } from '../services/api';
+import { supabase } from '../services/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import useRealtime from '../hooks/useRealtime';
 import toast, { Toaster } from 'react-hot-toast';
@@ -23,25 +23,53 @@ const VolunteerDashboard = () => {
 
     const fetchData = useCallback(async () => {
         try {
-            const [assignmentsRes, volunteerRes] = await Promise.all([
-                taskAPI.getMyTasks(),
-                volunteerAPI.getMe()
-            ]);
+            if (!user) return;
 
-            setAssignments(assignmentsRes.data.assignments || []);
-            setVolunteer(volunteerRes.data.volunteer);
-            setDataLoading(false);
-        } catch (err) {
-            console.warn("Fetch error:", err);
-            // If the profile is missing (404), redirect to registration
-            if (err.response?.status === 404) {
+            // 1. Get Volunteer Profile directly from Supabase
+            const { data: vData, error: vError } = await supabase
+                .from('volunteers')
+                .select('*')
+                .eq('profile_id', user.id)
+                .single();
+
+            if (vError || !vData) {
+                console.warn("Volunteer profile missing:", vError);
                 navigate('/volunteer/register');
                 return;
             }
+            setVolunteer(vData);
+
+            // 2. Get Task Assignments
+            const { data: tData, error: tError } = await supabase
+                .from('task_assignments')
+                .select(`
+                    *,
+                    tasks (
+                        *,
+                        disasters (
+                            id,
+                            name,
+                            urgency,
+                            city,
+                            state,
+                            country,
+                            latitude,
+                            longitude
+                        )
+                    )
+                `)
+                .eq('volunteer_id', vData.id)
+                .order('created_at', { ascending: false });
+
+            if (tError) throw new Error(tError.message);
+            setAssignments(tData || []);
+            setDataLoading(false);
+        } catch (err) {
+            console.error("Fetch error:", err);
             if (dataLoading) setError('Failed to synchronize with Command Center');
             setDataLoading(false);
         }
-    }, [dataLoading, navigate]);
+    }, [user, dataLoading, navigate]);
 
     useEffect(() => {
         fetchData();
@@ -51,21 +79,45 @@ const VolunteerDashboard = () => {
 
     const handleUpdateAssignment = async (assignmentId, status) => {
         try {
-            await taskAPI.updateAssignment(assignmentId, status);
+            const { error } = await supabase
+                .from('task_assignments')
+                .update({ status, updated_at: new Date().toISOString() })
+                .eq('id', assignmentId);
+
+            if (error) throw new Error(error.message);
+
+            // If completed, update volunteer stats (simulate RPC logic directly since backend is bypassed)
+            if (status === 'completed' && volunteer) {
+                await supabase
+                    .from('volunteers')
+                    .update({
+                        completed_tasks: (volunteer.completed_tasks || 0) + 1,
+                        reliability_score: Math.min(100, (volunteer.reliability_score || 100) + 5)
+                    })
+                    .eq('id', volunteer.id);
+            }
+
             toast.success(`Mission status updated to ${status.toUpperCase()}`);
             fetchData();
         } catch (err) {
-            toast.error('Protocol override failed. Retry connection.');
+            toast.error(`Protocol override failed: ${err.message}`);
         }
     };
 
     const handleUpdateAvailability = async (availability) => {
+        if (!volunteer) return;
         try {
-            await volunteerAPI.updateAvailability(availability);
+            const { error } = await supabase
+                .from('volunteers')
+                .update({ availability })
+                .eq('id', volunteer.id);
+
+            if (error) throw new Error(error.message);
+
             toast.success(`Operational status set to ${availability.toUpperCase()}`);
             fetchData();
         } catch (err) {
-            toast.error('Status synchronization failed.');
+            toast.error(`Status synchronization failed: ${err.message}`);
         }
     };
 
