@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { auth, provider } from '../firebase';
+import { signInWithPopup } from 'firebase/auth';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -36,6 +38,19 @@ const Login = () => {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        setError('');
+        setLoading(true);
+        try {
+            await signInWithPopup(auth, provider);
+            setLoading(false);
+            navigate('/volunteer/dashboard');
+        } catch (err) {
+            setError(err.message || 'Google Authentication Failed.');
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 relative overflow-hidden">
             {/* Mesh Gradients */}
@@ -60,7 +75,7 @@ const Login = () => {
                                 </svg>
                             </motion.div>
                         </Link>
-                        <h2 className="text-4xl font-black text-white tracking-tighter uppercase leading-none mb-4">Tactical<br/>Authentication.</h2>
+                        <h2 className="text-4xl font-black text-white tracking-tighter uppercase leading-none mb-4">Tactical<br />Authentication.</h2>
                         <p className="text-[10px] font-black tracking-[0.3em] text-emerald-500 uppercase">Input Credentials to Initialize Node</p>
                     </div>
 
@@ -82,8 +97,8 @@ const Login = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Responder Signature (Email)</label>
-                             <input
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Responder Signature (Email)</label>
+                            <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -94,8 +109,8 @@ const Login = () => {
                         </div>
 
                         <div className="space-y-2">
-                             <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Secure Passkey</label>
-                             <input
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Secure Passkey</label>
+                            <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -121,6 +136,18 @@ const Login = () => {
                                 'Initiate Session'
                             )}
                         </motion.button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            type="button"
+                            onClick={handleGoogleLogin}
+                            disabled={loading}
+                            className="w-full btn bg-white text-gray-900 border border-gray-200 hover:bg-gray-200 py-5 text-xs font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 disabled:opacity-50 mt-4 rounded-xl"
+                        >
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 bg-white rounded-full" />
+                            {loading ? 'Authenticating...' : 'Sign in with Google'}
+                        </motion.button>
                     </form>
 
                     <div className="mt-10 text-center flex flex-col items-center gap-4">
@@ -130,8 +157,8 @@ const Login = () => {
                                 Request Entry Profile
                             </Link>
                         </p>
-                         <div className="h-px w-20 bg-white/5"></div>
-                         <Link to="/" className="text-[9px] font-bold text-gray-700 uppercase tracking-widest hover:text-gray-500">Back to External View</Link>
+                        <div className="h-px w-20 bg-white/5"></div>
+                        <Link to="/" className="text-[9px] font-bold text-gray-700 uppercase tracking-widest hover:text-gray-500">Back to External View</Link>
                     </div>
                 </div>
             </motion.div>
