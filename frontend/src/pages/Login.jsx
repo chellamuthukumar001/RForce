@@ -8,19 +8,26 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [submitLoading, setSubmitLoading] = useState(false);
 
-    const { login } = useAuth();
+    const { login, user, role, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!authLoading && user && role) {
+            if (role === 'admin') navigate('/admin/dashboard');
+            else navigate('/volunteer/dashboard');
+        }
+    }, [user, role, authLoading, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
+        setSubmitLoading(true);
 
         try {
             const { data, error } = await login(email, password);
-            setLoading(false);
+            setSubmitLoading(false);
 
             if (error) {
                 setError(error);
@@ -39,7 +46,7 @@ const Login = () => {
 
     const handleGoogleLogin = async () => {
         setError('');
-        setLoading(true);
+        setSubmitLoading(true);
         try {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
@@ -50,7 +57,7 @@ const Login = () => {
             if (error) throw error;
         } catch (err) {
             setError(err.message || 'Google Authentication Failed.');
-            setLoading(false);
+            setSubmitLoading(false);
         }
     };
 
@@ -127,10 +134,10 @@ const Login = () => {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             type="submit"
-                            disabled={loading}
+                            disabled={submitLoading || authLoading}
                             className="w-full btn btn-premium py-5 text-xs font-black uppercase tracking-widest shadow-2xl shadow-emerald-500/20 disabled:opacity-50"
                         >
-                            {loading ? (
+                            {submitLoading ? (
                                 <span className="flex items-center justify-center gap-3">
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                                     Synchronizing...
@@ -145,11 +152,11 @@ const Login = () => {
                             whileTap={{ scale: 0.98 }}
                             type="button"
                             onClick={handleGoogleLogin}
-                            disabled={loading}
+                            disabled={submitLoading || authLoading}
                             className="w-full btn bg-white text-gray-900 border border-gray-200 hover:bg-gray-200 py-5 text-xs font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 disabled:opacity-50 mt-4 rounded-xl"
                         >
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 bg-white rounded-full" />
-                            {loading ? 'Authenticating...' : 'Sign in with Google'}
+                            {submitLoading ? 'Authenticating...' : 'Sign in with Google'}
                         </motion.button>
                     </form>
 

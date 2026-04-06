@@ -1,10 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 import heroImage from '../assets/hero-image.png'; // Will use the newly generated one in real scenario, mapping locally for now
 
 const Landing = () => {
+    const navigate = useNavigate();
+    const { user, role, loading } = useAuth();
     const [stats, setStats] = useState({ volunteers: 0, events: 0, helped: 0 });
+
+    useEffect(() => {
+        if (!loading && user && role) {
+            if (role === 'admin') navigate('/admin/dashboard');
+            else navigate('/volunteer/dashboard');
+        }
+    }, [user, role, loading, navigate]);
     const containerRef = useRef(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -166,7 +176,7 @@ const Landing = () => {
             <section className="py-32 bg-background relative z-10">
                 <div className="container mx-auto px-6">
                     <div className="mb-20 text-center">
-                        <motion.h2 
+                        <motion.h2
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             className="text-5xl md:text-7xl font-bold tracking-tight mb-4"
@@ -177,7 +187,7 @@ const Landing = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-[600px]">
-                        <motion.div 
+                        <motion.div
                             whileHover={{ y: -5 }}
                             className="md:col-span-2 md:row-span-2 glass-card bg-emerald-500/5 flex flex-col justify-end p-10 relative overflow-hidden"
                         >
@@ -192,7 +202,7 @@ const Landing = () => {
                             </p>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                             whileHover={{ y: -5 }}
                             className="md:col-span-2 glass-card flex items-center justify-between group"
                         >
@@ -207,7 +217,7 @@ const Landing = () => {
                             </div>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                             whileHover={{ y: -5 }}
                             className="glass-card flex flex-col justify-center"
                         >
@@ -215,7 +225,7 @@ const Landing = () => {
                             <p className="text-gray-500 text-sm">Military-grade profile verification and secure data encryption protocols.</p>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                             whileHover={{ y: -5 }}
                             className="glass-card flex flex-col justify-center border-emerald-500/40 bg-emerald-500/10"
                         >
@@ -237,7 +247,7 @@ const Landing = () => {
                         className="max-w-4xl mx-auto"
                     >
                         <h2 className="text-6xl md:text-8xl font-black tracking-tighter mb-10">
-                            Answer the call <br /> 
+                            Answer the call <br />
                             <span className="text-emerald-500">of duty.</span>
                         </h2>
                         <Link to="/signup">
