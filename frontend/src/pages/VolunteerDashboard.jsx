@@ -59,7 +59,7 @@ const VolunteerDashboard = () => {
                     )
                 `)
                 .eq('volunteer_id', vData.id)
-                .order('created_at', { ascending: false });
+                .order('assigned_at', { ascending: false });
 
             if (tError) throw new Error(tError.message);
             setAssignments(tData || []);
