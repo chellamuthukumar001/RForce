@@ -19,17 +19,26 @@ export const AuthProvider = ({ children }) => {
     const [role, setRole] = useState(null);
 
     useEffect(() => {
-        const fetchRole = async (userId) => {
-            if (!userId) {
+        const fetchRole = async (user) => {
+            if (!user?.id) {
                 setRole(null);
                 return;
             }
             const { data } = await supabase
                 .from('profiles')
                 .select('role')
-                .eq('id', userId)
+                .eq('id', user.id)
                 .single();
-            setRole(data?.role || 'volunteer');
+
+            if (data) {
+                setRole(data.role || 'volunteer');
+            } else {
+                // Insert profile for OAuth users
+                await supabase
+                    .from('profiles')
+                    .insert({ id: user.id, email: user.email, role: 'volunteer' });
+                setRole('volunteer');
+            }
         };
 
         // Check for existing session
@@ -39,7 +48,7 @@ export const AuthProvider = ({ children }) => {
             if (session?.access_token) {
                 localStorage.setItem('access_token', session.access_token);
             }
-            if (session?.user) fetchRole(session.user.id);
+            if (session?.user) fetchRole(session.user);
             setLoading(false);
         });
 
@@ -53,7 +62,7 @@ export const AuthProvider = ({ children }) => {
                 localStorage.removeItem('access_token');
                 setRole(null);
             }
-            if (session?.user) fetchRole(session.user.id);
+            if (session?.user) fetchRole(session.user);
         });
 
         return () => subscription.unsubscribe();

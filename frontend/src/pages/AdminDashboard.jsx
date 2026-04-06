@@ -75,18 +75,18 @@ const AdminDashboard = () => {
     return (
         <div className="min-h-screen bg-background py-32 px-6 lg:px-12">
             <Toaster position="top-right" toastOptions={{ style: { background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
-            
+
             <div className="container mx-auto max-w-[1600px]">
                 {/* Tactical Header */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-8">
                     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                         <div className="flex items-center gap-4 mb-4">
+                        <div className="flex items-center gap-4 mb-4">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,1)]"></span>
                             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-400">Tactical Control Hub v4.0</span>
-                         </div>
-                        <h1 className="text-6xl lg:text-8xl font-black tracking-tighter text-white uppercase leading-none">Command.<br/><span className="text-emerald-500">Center.</span></h1>
+                        </div>
+                        <h1 className="text-6xl lg:text-8xl font-black tracking-tighter text-white uppercase leading-none">Command.<br /><span className="text-emerald-500">Center.</span></h1>
                     </motion.div>
-                    
+
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-wrap gap-4">
                         <Link to="/admin/create-disaster" className="btn btn-premium bg-gradient-to-tr from-red-500 to-rose-700 px-8 py-5 text-xs font-black uppercase tracking-widest shadow-2xl shadow-red-500/20">
                             + Emergency Declaration
@@ -104,8 +104,8 @@ const AdminDashboard = () => {
                         { label: 'Verified Responders', value: stats.volunteers, color: 'emerald', icon: '🛡️', theme: 'border-l-emerald-500 text-emerald-500 bg-emerald-500 text-emerald-500/60' },
                         { label: 'Unassigned Missions', value: stats.tasks, color: 'blue', icon: '🎯', theme: 'border-l-blue-500 text-blue-500 bg-blue-500 text-blue-500/60' }
                     ].map((stat, i) => (
-                        <motion.div 
-                            key={i} 
+                        <motion.div
+                            key={i}
                             whileHover={{ y: -5 }}
                             className={`glass-card p-10 ${stat.theme.split(' ')[0]} group relative overflow-hidden`}
                         >
@@ -164,7 +164,7 @@ const AdminDashboard = () => {
                                                     <option value="" className="bg-background">Assign Responder...</option>
                                                     {volunteers.filter(v => v.availability === 'available').map(v => (
                                                         <option key={v.id} value={v.id} className="bg-background">
-                                                            {v.name} - Reliability: {v.reliability_score}%
+                                                            {v.name} - Reliability: {v.reliability_score}% {v.phone ? `(${v.phone})` : ''}
                                                         </option>
                                                     ))}
                                                 </select>
@@ -190,7 +190,7 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                     {/* Log of Operations */}
                     <div className="glass-card">
-                         <div className="p-8 border-b border-white/5 bg-white/[0.01]">
+                        <div className="p-8 border-b border-white/5 bg-white/[0.01]">
                             <h3 className="text-2xl font-black text-white tracking-tighter uppercase">Recent Operations</h3>
                         </div>
                         <div className="overflow-x-auto">
@@ -212,17 +212,16 @@ const AdminDashboard = () => {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <span className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                                                    t.status === 'completed' ? 'text-emerald-400 bg-emerald-400/10' :
+                                                <span className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${t.status === 'completed' ? 'text-emerald-400 bg-emerald-400/10' :
                                                     t.status === 'in-progress' ? 'text-blue-400 bg-blue-400/10' : 'text-gray-400 bg-white/5'
-                                                }`}>
+                                                    }`}>
                                                     {t.status}
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-3">
-                                                     <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-gray-400">R</div>
-                                                     <span className="text-xs font-black text-gray-400 uppercase tracking-wider">Unit-Validated</span>
+                                                    <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-gray-400">R</div>
+                                                    <span className="text-xs font-black text-gray-400 uppercase tracking-wider">Unit-Validated</span>
                                                 </div>
                                             </td>
                                         </tr>
@@ -234,36 +233,38 @@ const AdminDashboard = () => {
 
                     {/* Global Force Readiness */}
                     <div className="glass-card">
-                         <div className="p-8 border-b border-white/5 bg-white/[0.01]">
+                        <div className="p-8 border-b border-white/5 bg-white/[0.01]">
                             <h3 className="text-2xl font-black text-white tracking-tighter uppercase">Global Force Readiness</h3>
                         </div>
                         <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">
-                             {volunteers.map((v, i) => (
-                                 <div key={i} className="p-8 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
+                            {volunteers.map((v, i) => (
+                                <div key={i} className="p-8 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
                                     <div className="flex items-center gap-6">
                                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center text-xl font-black text-white">
                                             {v.name ? v.name[0] : 'R'}
                                         </div>
                                         <div>
                                             <h4 className="text-lg font-black text-white uppercase tracking-tighter">{v.name}</h4>
-                                            <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Impact: {v.completed_tasks || 0} Missions</p>
+                                            <div className="flex gap-4">
+                                                <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest">Impact: {v.completed_tasks || 0} Missions</p>
+                                                {v.phone && <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest">Comm: {v.phone}</p>}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border ${
-                                            v.availability === 'available' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'border-white/5 bg-white/5 text-gray-500'
-                                        }`}>
+                                        <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border ${v.availability === 'available' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'border-white/5 bg-white/5 text-gray-500'
+                                            }`}>
                                             {v.availability}
                                         </div>
                                         <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mt-2">{v.city || 'GLOBAL'}</p>
                                     </div>
-                                 </div>
-                             ))}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             {/* Global Operability Status */}
             <footer className="mt-32 pt-8 border-t border-white/5 text-center text-[10px] font-black text-gray-600 uppercase tracking-[0.5em]">
                 System Status: NOMINAL | Protocol: SECURE-X | Uptime: 99.9%

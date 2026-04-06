@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { taskAPI, volunteerAPI } from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import useRealtime from '../hooks/useRealtime';
@@ -7,8 +8,17 @@ import toast, { Toaster } from 'react-hot-toast';
 const VolunteerDashboard = () => {
     const [assignments, setAssignments] = useState([]);
     const [volunteer, setVolunteer] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [dataLoading, setDataLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const navigate = useNavigate();
+    const { user, role, loading: authLoading } = useAuth();
+
+    useEffect(() => {
+        if (!authLoading && role === 'admin') {
+            navigate('/admin/dashboard');
+        }
+    }, [role, authLoading, navigate]);
 
     const fetchData = useCallback(async () => {
         try {
@@ -19,13 +29,18 @@ const VolunteerDashboard = () => {
 
             setAssignments(assignmentsRes.data.assignments || []);
             setVolunteer(volunteerRes.data.volunteer);
-            setLoading(false);
+            setDataLoading(false);
         } catch (err) {
             console.warn("Fetch error:", err);
-            if (loading) setError('Failed to synchronize with Command Center');
-            setLoading(false);
+            // If the profile is missing (404), redirect to registration
+            if (err.response?.status === 404) {
+                navigate('/volunteer/register');
+                return;
+            }
+            if (dataLoading) setError('Failed to synchronize with Command Center');
+            setDataLoading(false);
         }
-    }, [loading]);
+    }, [dataLoading, navigate]);
 
     useEffect(() => {
         fetchData();
@@ -53,13 +68,13 @@ const VolunteerDashboard = () => {
         }
     };
 
-    if (loading) {
+    if (authLoading || dataLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-background">
-                 <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4">
                     <div className="w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
                     <span className="text-[10px] font-black tracking-[0.3em] text-emerald-500">SYNCHRONIZING SECURE NODE</span>
-                 </div>
+                </div>
             </div>
         );
     }
@@ -67,12 +82,12 @@ const VolunteerDashboard = () => {
     return (
         <div className="min-h-screen bg-background py-32 px-6">
             <Toaster position="bottom-right" toastOptions={{ style: { background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
-            
+
             <div className="container mx-auto max-w-7xl">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                     <div>
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20"
@@ -147,7 +162,7 @@ const VolunteerDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
                             <div className="glass-card flex items-center gap-6 p-8">
                                 <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center scroll-shadow">
-                                     <span className="text-4xl font-black text-emerald-500">{volunteer?.completed_tasks || 0}</span>
+                                    <span className="text-4xl font-black text-emerald-500">{volunteer?.completed_tasks || 0}</span>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Validated Strikes</p>
@@ -156,7 +171,7 @@ const VolunteerDashboard = () => {
                             </div>
                             <div className="glass-card flex items-center gap-6 p-8">
                                 <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                                     <span className="text-4xl font-black text-blue-500">{volunteer?.reliability_score || 100}%</span>
+                                    <span className="text-4xl font-black text-blue-500">{volunteer?.reliability_score || 100}%</span>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">Strategic Accuracy</p>
@@ -166,13 +181,13 @@ const VolunteerDashboard = () => {
                         </div>
 
                         <div className="flex items-center justify-between mb-8 px-2">
-                             <div className="flex flex-col">
+                            <div className="flex flex-col">
                                 <h2 className="text-3xl font-black text-white tracking-tighter uppercase">Live Assignments</h2>
                                 <p className="text-xs text-gray-500 font-bold tracking-widest">ENCRYPTED OPERATIONAL DATA</p>
-                             </div>
-                             <div className="px-4 py-2 bg-white/5 rounded-2xl border border-white/5 text-[11px] font-black text-gray-400 uppercase tracking-widest transition-all">
+                            </div>
+                            <div className="px-4 py-2 bg-white/5 rounded-2xl border border-white/5 text-[11px] font-black text-gray-400 uppercase tracking-widest transition-all">
                                 {assignments.length} ACTIVE
-                             </div>
+                            </div>
                         </div>
 
                         {assignments.length === 0 ? (
@@ -190,8 +205,8 @@ const VolunteerDashboard = () => {
                                 <AnimatePresence mode='popLayout'>
                                     {assignments.map(assignment => {
                                         const urgency = assignment.tasks.disasters.urgency === 'critical' ? 'critical' :
-                                                       assignment.tasks.disasters.urgency === 'high' ? 'high' : 'medium';
-                                        
+                                            assignment.tasks.disasters.urgency === 'high' ? 'high' : 'medium';
+
                                         const theme = {
                                             critical: { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20', glow: 'from-red-500/20' },
                                             high: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20', glow: 'from-amber-500/20' },
@@ -208,7 +223,7 @@ const VolunteerDashboard = () => {
                                             >
                                                 <div className={`absolute -inset-0.5 bg-gradient-to-r ${theme.glow} to-transparent rounded-[2rem] opacity-0 group-hover:opacity-100 transition duration-500 lg:blur-sm`}></div>
                                                 <div className="relative glass-card p-10 flex flex-col md:flex-row gap-10 items-start md:items-center">
-                                                    
+
                                                     <div className="flex-1 space-y-4">
                                                         <div className="flex items-center gap-3">
                                                             <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] ${theme.bg} ${theme.text} ${theme.border} shadow-[0_0_10px_rgba(0,0,0,0.3)]`}>

@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { auth, provider } from '../firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { supabase } from '../services/supabase';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -42,9 +41,13 @@ const Login = () => {
         setError('');
         setLoading(true);
         try {
-            await signInWithPopup(auth, provider);
-            setLoading(false);
-            navigate('/volunteer/dashboard');
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/volunteer/dashboard`
+                }
+            });
+            if (error) throw error;
         } catch (err) {
             setError(err.message || 'Google Authentication Failed.');
             setLoading(false);
