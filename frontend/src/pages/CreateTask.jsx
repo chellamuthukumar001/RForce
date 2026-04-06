@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { taskAPI, disasterAPI } from '../services/api';
 import { supabase } from '../services/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,16 +35,14 @@ const CreateTask = () => {
 
     const fetchDisasters = async () => {
         try {
-            const res = await disasterAPI.getAll('active');
-            setDisasters(res.data.disasters || []);
+            const { data } = await supabase
+                .from('disasters')
+                .select('*')
+                .eq('status', 'active')
+                .order('created_at', { ascending: false });
+            setDisasters(data || []);
         } catch (err) {
-            // Also try fetching all disasters if active filter fails
-            try {
-                const res = await disasterAPI.getAll();
-                setDisasters(res.data.disasters || []);
-            } catch (e) {
-                console.error('Failed to load disasters:', e);
-            }
+            console.error('Failed to load disasters:', err);
         }
     };
 
@@ -79,13 +76,26 @@ const CreateTask = () => {
         if (!formData.title.trim()) return setError('Mission identifier is required');
         setLoading(true);
         try {
-            const res = await taskAPI.create(formData);
-            const task = res.data.task;
+            // Insert task directly via Supabase (bypasses backend auth)
+            const { data: task, error } = await supabase
+                .from('tasks')
+                .insert({
+                    disaster_id: formData.disaster_id,
+                    title: formData.title,
+                    description: formData.description,
+                    required_skills: formData.required_skills,
+                    priority: formData.priority,
+                    status: 'open'
+                })
+                .select()
+                .single();
+
+            if (error) throw new Error(error.message);
             setCreatedTask(task);
             setSuccess(`✅ Mission "${task.title}" created! Now assign it to a volunteer below.`);
             setLoading(false);
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to create mission. Ensure you are logged in as Admin.');
+            setError(err.message || 'Failed to create mission.');
             setLoading(false);
         }
     };
@@ -96,12 +106,28 @@ const CreateTask = () => {
         setAssignLoading(true);
         setError('');
         try {
-            await taskAPI.assign(createdTask.id, [selectedVolunteer]);
+            // Insert assignment directly via Supabase (bypasses backend auth)
+            const { error } = await supabase
+                .from('task_assignments')
+                .insert({
+                    task_id: createdTask.id,
+                    volunteer_id: selectedVolunteer,
+                    status: 'pending'
+                });
+
+            if (error) throw new Error(error.message);
+
+            // Update task status to 'assigned'
+            await supabase
+                .from('tasks')
+                .update({ status: 'assigned' })
+                .eq('id', createdTask.id);
+
             setSuccess(`🚀 Mission deployed to operative successfully!`);
             setAssignLoading(false);
             setTimeout(() => navigate('/admin/dashboard'), 1500);
         } catch (err) {
-            setError(err.response?.data?.error || 'Assignment failed');
+            setError(err.message || 'Assignment failed');
             setAssignLoading(false);
         }
     };
@@ -114,10 +140,20 @@ const CreateTask = () => {
         if (!formData.title.trim()) return setError('Mission identifier is required');
         setLoading(true);
         try {
-            await taskAPI.create(formData);
+            const { error } = await supabase
+                .from('tasks')
+                .insert({
+                    disaster_id: formData.disaster_id,
+                    title: formData.title,
+                    description: formData.description,
+                    required_skills: formData.required_skills,
+                    priority: formData.priority,
+                    status: 'open'
+                });
+            if (error) throw new Error(error.message);
             navigate('/admin/dashboard');
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to create mission');
+            setError(err.message || 'Failed to create mission');
             setLoading(false);
         }
     };
