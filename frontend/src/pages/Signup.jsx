@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,10 +10,17 @@ const Signup = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const role = 'volunteer';
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [submitLoading, setSubmitLoading] = useState(false);
 
-    const { signup } = useAuth();
+    const { signup, user, role: userRole, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!authLoading && user && userRole) {
+            if (userRole === 'admin') navigate('/admin/dashboard');
+            else navigate('/volunteer/dashboard');
+        }
+    }, [user, userRole, authLoading, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,11 +36,11 @@ const Signup = () => {
             return;
         }
 
-        setLoading(true);
+        setSubmitLoading(true);
 
         try {
             const { error } = await signup(email, password, role);
-            setLoading(false);
+            setSubmitLoading(false);
 
             if (error) {
                 setError(error);
@@ -42,13 +49,13 @@ const Signup = () => {
             }
         } catch (err) {
             setError('Network sync failure. Try again.');
-            setLoading(false);
+            setSubmitLoading(false);
         }
     };
 
     const handleGoogleSignup = async () => {
         setError('');
-        setLoading(true);
+        setSubmitLoading(true);
         try {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
@@ -59,7 +66,7 @@ const Signup = () => {
             if (error) throw error;
         } catch (err) {
             setError(err.message || 'Google Authentication Failed.');
-            setLoading(false);
+            setSubmitLoading(false);
         }
     };
 
@@ -149,10 +156,10 @@ const Signup = () => {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             type="submit"
-                            disabled={loading}
+                            disabled={submitLoading || authLoading}
                             className="w-full btn btn-premium py-5 text-xs font-black uppercase tracking-widest shadow-2xl shadow-emerald-500/20 disabled:opacity-50"
                         >
-                            {loading ? (
+                            {submitLoading ? (
                                 <span className="flex items-center justify-center gap-3">
                                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                                     Registering Unit...
@@ -167,11 +174,11 @@ const Signup = () => {
                             whileTap={{ scale: 0.98 }}
                             type="button"
                             onClick={handleGoogleSignup}
-                            disabled={loading}
+                            disabled={submitLoading || authLoading}
                             className="w-full btn bg-white text-gray-900 border border-gray-200 hover:bg-gray-200 py-5 text-xs font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 disabled:opacity-50 mt-4 rounded-xl"
                         >
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 bg-white rounded-full" />
-                            {loading ? 'Authenticating...' : 'Sign up with Google'}
+                            {submitLoading ? 'Authenticating...' : 'Sign up with Google'}
                         </motion.button>
                     </form>
 
