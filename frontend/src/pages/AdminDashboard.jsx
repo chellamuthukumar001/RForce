@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
+import ForestLinkModal from '../components/ForestLinkModal';
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState({ disasters: 0, volunteers: 0, tasks: 0 });
@@ -12,6 +13,7 @@ const AdminDashboard = () => {
     const [volunteers, setVolunteers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('volunteers'); // 'volunteers' | 'missions'
+    const [loraModalOpen, setLoraModalOpen] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -112,6 +114,14 @@ const AdminDashboard = () => {
                     </motion.div>
 
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-wrap gap-4">
+                        <button
+                            type="button"
+                            onClick={() => setLoraModalOpen(true)}
+                            className="btn btn-premium bg-gradient-to-tr from-cyan-600 to-teal-800 px-8 py-5 text-xs font-black uppercase tracking-widest shadow-2xl shadow-cyan-500/20 flex items-center gap-2 hover:border-cyan-400 border border-cyan-500/30"
+                        >
+                            <span>📡</span>
+                            <span>ForestLink LoRa Gateway</span>
+                        </button>
                         <Link to="/admin/create-disaster" className="btn btn-premium bg-gradient-to-tr from-red-500 to-rose-700 px-8 py-5 text-xs font-black uppercase tracking-widest shadow-2xl shadow-red-500/20">
                             + Emergency Declaration
                         </Link>
@@ -344,6 +354,13 @@ const AdminDashboard = () => {
                     System Status: NOMINAL | Protocol: SECURE-X | Uptime: 99.9%
                 </footer>
             </div>
+
+            {/* ForestLink LoRa Gateway Modal */}
+            <ForestLinkModal
+                isOpen={loraModalOpen}
+                onClose={() => setLoraModalOpen(false)}
+                onSignalProcessed={fetchData}
+            />
         </div>
     );
 };

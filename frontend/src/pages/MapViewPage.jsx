@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MapView, { MAP_LAYERS } from '../components/MapView';
+import ForestLinkModal from '../components/ForestLinkModal';
 import { supabase } from '../services/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,6 +29,18 @@ const MapViewPage = () => {
     const [filter, setFilter] = useState('all');
     const [mapLayer, setMapLayer] = useState('osm');
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [loraModalOpen, setLoraModalOpen] = useState(false);
+    const [loraNodes, setLoraNodes] = useState([
+        {
+            node_id: 'FOREST_NODE_001',
+            latitude: 9.8692558,
+            longitude: 77.4222974,
+            battery_pct: 85,
+            rssi: -78,
+            snr: 4.25,
+            is_emergency: false
+        }
+    ]);
 
     useEffect(() => {
         fetchData();
@@ -105,6 +118,25 @@ const MapViewPage = () => {
         return { volunteers, disasters };
     };
 
+    const handleLoraSignalProcessed = (data) => {
+        if (data.lora_data && data.lora_data.gps) {
+            const newNode = {
+                node_id: data.lora_data.node_id,
+                latitude: data.lora_data.gps.latitude,
+                longitude: data.lora_data.gps.longitude,
+                battery_pct: data.lora_data.node_health?.battery_pct,
+                rssi: data.lora_data.rf_metrics?.rssi,
+                snr: data.lora_data.rf_metrics?.snr,
+                is_emergency: data.lora_data.emergency?.is_emergency
+            };
+            setLoraNodes(prev => [newNode, ...prev.filter(n => n.node_id !== newNode.node_id)]);
+        }
+
+        if (data.ai_dispatch?.disaster) {
+            setDisasters(prev => [data.ai_dispatch.disaster, ...prev]);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-black">
@@ -166,6 +198,24 @@ const MapViewPage = () => {
                                             <span className="text-2xl font-black text-emerald-500">{volunteers.length}</span>
                                         </div>
                                     </div>
+
+                                    {/* ForestLink LoRa Gateway Button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setLoraModalOpen(true)}
+                                        className="w-full p-3 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-slate-900 to-cyan-950/60 border border-emerald-500/40 text-left hover:border-emerald-400 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] transition-all group flex items-center justify-between"
+                                    >
+                                        <div className="flex items-center gap-2.5">
+                                            <span className="text-xl">📡</span>
+                                            <div>
+                                                <span className="text-[11px] font-black uppercase text-emerald-400 block tracking-wider leading-none">
+                                                    ForestLink LoRa Gateway
+                                                </span>
+                                                <span className="text-[9px] text-gray-400">433MHz Mesh & AI Auto-Assign</span>
+                                            </div>
+                                        </div>
+                                        <span className="text-xs text-emerald-400 group-hover:translate-x-1 transition-transform">→</span>
+                                    </button>
 
                                     {/* Map Style / Engine Selector */}
                                     <div className="space-y-2">
@@ -276,6 +326,7 @@ const MapViewPage = () => {
                         zoom={7}
                         volunteers={filtered.volunteers}
                         disasters={filtered.disasters}
+                        loraNodes={loraNodes}
                         mapLayer={mapLayer}
                         onMapLayerChange={setMapLayer}
                         showLayerSelector={true}
@@ -293,6 +344,13 @@ const MapViewPage = () => {
                         </span>
                     </div>
                 </div>
+
+                {/* ForestLink LoRa Gateway Modal */}
+                <ForestLinkModal
+                    isOpen={loraModalOpen}
+                    onClose={() => setLoraModalOpen(false)}
+                    onSignalProcessed={handleLoraSignalProcessed}
+                />
             </div>
         </div>
     );

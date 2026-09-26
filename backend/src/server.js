@@ -9,6 +9,7 @@ import disasterRoutes from './routes/disasters.js';
 import taskRoutes from './routes/tasks.js';
 import updatesRoutes from './routes/updates.js';
 import aiRoutes from './routes/ai.js';
+import gatewayRoutes from './routes/gateway.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -40,6 +41,7 @@ app.use('/api/disasters', disasterRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/updates', updatesRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/gateway', gatewayRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

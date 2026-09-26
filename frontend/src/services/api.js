@@ -88,4 +88,12 @@ export const updatesAPI = {
     delete: (id) => api.delete(`/updates/${id}`)
 };
 
+// ForestLink LoRa Gateway API
+export const gatewayAPI = {
+    ingestLoRa: (data) => api.post('/gateway/lora/ingest', data),
+    simulateLoRa: (data) => api.post('/gateway/lora/simulate', data),
+    getSignals: () => api.get('/gateway/lora/signals'),
+    getNodes: () => api.get('/gateway/lora/nodes')
+};
+
 export default api;

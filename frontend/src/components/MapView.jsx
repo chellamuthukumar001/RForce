@@ -111,6 +111,36 @@ const selectedIcon = L.divIcon({
     popupAnchor: [0, -15]
 });
 
+const loraNodeIcon = L.divIcon({
+    html: `
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;">
+            <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: #06b6d4; opacity: 0.5; animation: rforce-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+            <div style="position: relative; z-index: 10; width: 28px; height: 28px; border-radius: 50%; background-color: #0f172a; border: 2.5px solid #06b6d4; box-shadow: 0 0 12px rgba(6,182,212,0.8); display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                📡
+            </div>
+        </div>
+    `,
+    className: 'lora-icon',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16]
+});
+
+const loraEmergencyIcon = L.divIcon({
+    html: `
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px;">
+            <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: #f43f5e; opacity: 0.6; animation: rforce-ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+            <div style="position: relative; z-index: 10; width: 34px; height: 34px; border-radius: 50%; background-color: #1e112a; border: 3px solid #f43f5e; box-shadow: 0 0 20px rgba(244,63,94,0.9); display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                🚨
+            </div>
+        </div>
+    `,
+    className: 'lora-sos-icon',
+    iconSize: [38, 38],
+    iconAnchor: [19, 19],
+    popupAnchor: [0, -19]
+});
+
 // Custom map controls component
 const MapControls = ({ onRecenter, hasPoints }) => {
     const map = useMap();
@@ -156,6 +186,7 @@ const MapView = ({
     zoom = 7,
     volunteers = [],
     disasters = [],
+    loraNodes = [],
     onLocationSelect = null,
     selectedLocation = null,
     mapLayer = 'osm',
@@ -195,7 +226,8 @@ const MapView = ({
 
     const validVolunteers = volunteers.filter(v => v.latitude && v.longitude && (v.latitude !== 0 || v.longitude !== 0));
     const validDisasters = disasters.filter(d => d.latitude && d.longitude && (d.latitude !== 0 || d.longitude !== 0));
-    const hasPoints = validVolunteers.length > 0 || validDisasters.length > 0;
+    const validLoraNodes = (loraNodes || []).filter(n => n.latitude && n.longitude && (n.latitude !== 0 || n.longitude !== 0));
+    const hasPoints = validVolunteers.length > 0 || validDisasters.length > 0 || validLoraNodes.length > 0;
 
     const MapBounds = () => {
         const map = useMap();
@@ -210,14 +242,15 @@ const MapView = ({
 
             const points = [
                 ...validVolunteers.map(v => [v.latitude, v.longitude]),
-                ...validDisasters.map(d => [d.latitude, d.longitude])
+                ...validDisasters.map(d => [d.latitude, d.longitude]),
+                ...validLoraNodes.map(n => [n.latitude, n.longitude])
             ];
 
             if (points.length > 0) {
                 const bounds = L.latLngBounds(points);
                 map.fitBounds(bounds, { padding: [80, 80], maxZoom: 14 });
             }
-        }, [map, selectedLocation, volunteers, disasters]);
+        }, [map, selectedLocation, volunteers, disasters, loraNodes]);
 
         return null;
     };
@@ -325,6 +358,51 @@ const MapView = ({
                                 <p className="text-xs font-bold text-gray-400 mb-2">📍 {d.city || 'Regional Sector'}, {d.state || ''}</p>
                                 <div className="h-px bg-white/10 w-full mb-2" />
                                 <p className="text-xs text-gray-300 leading-relaxed max-h-24 overflow-y-auto">{d.description || 'Emergency incident recorded in sector.'}</p>
+                            </div>
+                        </Popup>
+                    </Marker>
+                ))}
+
+                {/* ForestLink LoRa Mesh Node Markers */}
+                {validLoraNodes.map((node) => (
+                    <Marker
+                        key={`lora-${node.node_id}-${node.latitude}`}
+                        position={[node.latitude, node.longitude]}
+                        icon={node.is_emergency ? loraEmergencyIcon : loraNodeIcon}
+                    >
+                        <Popup className="premium-popup">
+                            <div className="p-1 min-w-[220px]">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-base">📡</span>
+                                        <div>
+                                            <h3 className="text-sm font-black text-cyan-400 leading-none">{node.node_id}</h3>
+                                            <span className="text-[9px] uppercase font-bold text-gray-400 tracking-wider">ForestLink LoRa Node</span>
+                                        </div>
+                                    </div>
+                                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
+                                        node.is_emergency
+                                            ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse'
+                                            : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                                    }`}>
+                                        {node.is_emergency ? 'SOS DISTRESS' : 'ONLINE'}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 my-2 text-[10px]">
+                                    <div className="bg-white/5 p-1.5 rounded-lg border border-white/5">
+                                        <span className="text-gray-400 block text-[9px]">RSSI / SNR</span>
+                                        <span className="font-mono text-white font-bold">{node.rssi ?? -78}dBm / {node.snr ?? 4.2}dB</span>
+                                    </div>
+                                    <div className="bg-white/5 p-1.5 rounded-lg border border-white/5">
+                                        <span className="text-gray-400 block text-[9px]">BATTERY</span>
+                                        <span className={`font-mono font-bold ${(node.battery_pct ?? 85) < 20 ? 'text-red-400' : 'text-emerald-400'}`}>
+                                            ⚡ {node.battery_pct ?? 85}%
+                                        </span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] font-mono text-gray-300">
+                                    📍 {node.latitude.toFixed(5)}N, {node.longitude.toFixed(5)}E
+                                </p>
                             </div>
                         </Popup>
                     </Marker>
