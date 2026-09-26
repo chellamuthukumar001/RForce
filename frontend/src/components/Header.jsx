@@ -27,6 +27,7 @@ const Header = () => {
 
     const navLinks = [
         { path: '/map', label: 'OpenStreetMap' },
+        { path: '/lora-gateway', label: 'LoRa AI Gateway' },
         { path: '/updates', label: 'Live Updates' },
     ];
 

@@ -17,6 +17,7 @@ import CreateDisaster from './pages/CreateDisaster';
 import CreateTask from './pages/CreateTask';
 import MapViewPage from './pages/MapViewPage';
 import Updates from './pages/Updates';
+import LoraGatewayPage from './pages/LoraGatewayPage';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -127,6 +128,14 @@ function AnimatedRoutes() {
                     element={
                         <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
                             <MapViewPage />
+                        </motion.div>
+                    }
+                />
+                <Route
+                    path="/lora-gateway"
+                    element={
+                        <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
+                            <LoraGatewayPage />
                         </motion.div>
                     }
                 />

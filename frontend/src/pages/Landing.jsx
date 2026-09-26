@@ -118,6 +118,15 @@ const Landing = () => {
                                 </motion.button>
                             </Link>
 
+                            <Link to="/lora-gateway">
+                                <motion.button
+                                    whileHover={{ scale: 1.05, backgroundColor: "rgba(16, 185, 129, 0.2)" }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-8 py-5 bg-emerald-500/10 backdrop-blur-xl text-emerald-400 rounded-2xl font-bold text-lg border border-emerald-500/30 hover:border-emerald-500/60 transition-all flex items-center gap-2"
+                                >
+                                    <span>📡</span> LoRa AI Gateway
+                                </motion.button>
+                            </Link>
                             <div className="flex gap-4">
                                 <Link to="/login">
                                     <motion.button
