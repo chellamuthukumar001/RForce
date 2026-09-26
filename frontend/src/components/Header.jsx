@@ -26,7 +26,7 @@ const Header = () => {
     const isActive = (path) => location.pathname === path;
 
     const navLinks = [
-        { path: '/map', label: 'Global Map' },
+        { path: '/map', label: 'OpenStreetMap' },
         { path: '/updates', label: 'Live Updates' },
     ];
 

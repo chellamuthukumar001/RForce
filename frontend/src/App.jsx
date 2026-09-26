@@ -125,11 +125,9 @@ function AnimatedRoutes() {
                 <Route
                     path="/map"
                     element={
-                        <ProtectedRoute>
-                            <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
-                                <MapViewPage />
-                            </motion.div>
-                        </ProtectedRoute>
+                        <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
+                            <MapViewPage />
+                        </motion.div>
                     }
                 />
                 <Route
